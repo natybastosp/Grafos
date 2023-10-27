@@ -1,0 +1,80 @@
+/*
+Natália Bastos Pereira 
+2212082020
+*/
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_NODES 10001
+
+struct No {
+		int valor;
+		struct No *prox;
+};
+int max(int a, int b) {
+		return a > b ? a : b;
+}
+
+void addEdge(struct No *adj[], int u, int v) {
+		struct No *novoNo = (struct No *)malloc(sizeof(struct No));
+		novoNo->valor = v;
+		novoNo->prox = adj[u];
+		adj[u] = novoNo;
+}
+
+int dfs(int u, struct No *adj[], int visitado[]) {
+		visitado[u] = 1;
+		struct No *ptr = adj[u];
+		int max_prof1 = 0, max_prof2 = 0;
+
+		while (ptr != NULL) {
+				if (!visitado[ptr->valor]) {
+						int prof = dfs(ptr->valor, adj, visitado) + 1;
+						if (prof > max_prof1) {
+								max_prof2 = max_prof1;
+								max_prof1 = prof;
+						} else if (prof > max_prof2) {
+								max_prof2 = prof;
+						}
+				}
+				ptr = ptr->prox;
+		}
+
+		return max_prof1 + max_prof2;
+}
+
+int main() {
+		int numNos;
+		scanf("%d", &numNos);
+
+		struct No *adj[MAX_NODES];
+		for (int i = 1; i <= numNos; i++) {
+				adj[i] = NULL;
+		}
+
+		for (int i = 0; i < numNos - 1; i++) {
+				int u, v;
+				scanf("%d %d", &u, &v);
+				addEdge(adj, u, v);
+				addEdge(adj, v, u);
+		}
+
+		int *visitado = (int *)calloc((numNos + 1), sizeof(int));
+		int ans = dfs(1, adj, visitado);
+
+		printf("%d\n", ans);
+
+		free(visitado);
+		for (int i = 1; i <= numNos; i++) {
+				struct No *ptr = adj[i];
+				while (ptr != NULL) {
+						struct No *temp = ptr;
+						ptr = ptr->prox;
+						free(temp);
+				}
+		}
+
+		return 0;
+}
