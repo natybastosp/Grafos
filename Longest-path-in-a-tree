@@ -1,80 +1,73 @@
 /*
-Natália Bastos Pereira 
-2212082020
-*/
+Natalia Bastos Pereira 
+221208220
 
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_NODES 10001
+#define MAX_NOS 10001
 
-struct No {
+typedef struct no
+{
 		int valor;
-		struct No *prox;
-};
-int max(int a, int b) {
-		return a > b ? a : b;
+		struct no *prox;
+} no;
+
+no *adj[MAX_NOS];
+int visitado[MAX_NOS];
+int prof_max1, prof_max2;
+
+void adiciona_aresta(int u, int v)
+{
+		no *novo_no = (no *)malloc(sizeof(no));
+		novo_no->valor = v;
+		novo_no->prox = adj[u];
+		adj[u] = novo_no;
 }
 
-void addEdge(struct No *adj[], int u, int v) {
-		struct No *novoNo = (struct No *)malloc(sizeof(struct No));
-		novoNo->valor = v;
-		novoNo->prox = adj[u];
-		adj[u] = novoNo;
-}
-
-int dfs(int u, struct No *adj[], int visitado[]) {
-		visitado[u] = 1;
-		struct No *ptr = adj[u];
-		int max_prof1 = 0, max_prof2 = 0;
-
-		while (ptr != NULL) {
-				if (!visitado[ptr->valor]) {
-						int prof = dfs(ptr->valor, adj, visitado) + 1;
-						if (prof > max_prof1) {
-								max_prof2 = max_prof1;
-								max_prof1 = prof;
-						} else if (prof > max_prof2) {
-								max_prof2 = prof;
-						}
+void dfs(int node, int prof) {
+		visitado[node] = 1;
+		if (prof > prof_max1) {
+				prof_max1 = prof;
+				prof_max2 = node;
+		}
+		for (no* vizinho = adj[node]; vizinho != NULL; vizinho = vizinho->prox) {
+				if (!visitado[vizinho->valor]) {
+						dfs(vizinho->valor, prof + 1);
 				}
-				ptr = ptr->prox;
 		}
-
-		return max_prof1 + max_prof2;
 }
+int main()
+{
+		int qtd_nos;
+		scanf("%d", &qtd_nos);
 
-int main() {
-		int numNos;
-		scanf("%d", &numNos);
-
-		struct No *adj[MAX_NODES];
-		for (int i = 1; i <= numNos; i++) {
+		for (int i = 1; i <= qtd_nos; i++)
+		{
 				adj[i] = NULL;
+				visitado[i] = 0;
 		}
 
-		for (int i = 0; i < numNos - 1; i++) {
+		for (int i = 0; i < qtd_nos - 1; i++)
+		{
 				int u, v;
 				scanf("%d %d", &u, &v);
-				addEdge(adj, u, v);
-				addEdge(adj, v, u);
+				adiciona_aresta(u, v);
+				adiciona_aresta(v, u);
 		}
 
-		int *visitado = (int *)calloc((numNos + 1), sizeof(int));
-		int ans = dfs(1, adj, visitado);
+		prof_max1 = -1;
+		dfs(1, 0);
 
-		printf("%d\n", ans);
+		for (int i = 1; i <= qtd_nos; i++)
+				visitado[i] = 0;
 
-		free(visitado);
-		for (int i = 1; i <= numNos; i++) {
-				struct No *ptr = adj[i];
-				while (ptr != NULL) {
-						struct No *temp = ptr;
-						ptr = ptr->prox;
-						free(temp);
-				}
-		}
+		prof_max1 = -1;
+		dfs(prof_max2, 0);
+
+		printf("%d\n", prof_max1);
 
 		return 0;
 }
